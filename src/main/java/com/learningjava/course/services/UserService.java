@@ -13,6 +13,8 @@ import com.learningjava.course.repositories.UserRepository;
 import com.learningjava.course.services.exceptions.DatabaseException;
 import com.learningjava.course.services.exceptions.ResourceNotFoundException;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class UserService {
     @Autowired
@@ -47,9 +49,15 @@ public class UserService {
     public User update(Long id, User obj) {
         // getReferenceById não busca as informações no db. Ele prepara o obj e depois
         // envia para o banco de dados
-        User entity = repository.getReferenceById(id);
-        updateData(entity, obj);
-        return repository.save(entity);
+
+        try {
+            User entity = repository.getReferenceById(id);
+            updateData(entity, obj);
+            return repository.save(entity);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException(id);
+        }
+
     }
 
     private void updateData(User entity, User obj) {
